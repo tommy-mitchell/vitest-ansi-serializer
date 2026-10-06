@@ -5,7 +5,7 @@ const pattern = /\x1B([78]|\[(?:\?25[lh]|\d+;\d+H|\d*[A-Z]+|\d+m))/g;
 const repeatedPattern = /^(?<count>\d*)(?<code>[a-zA-Z])$/;
 const lineColumnPattern = /^(?<line>\d+);(?<column>\d+)H$/;
 const linkRegex = // eslint-disable-next-line max-len
-  /\u{1B}\]8;[^\u{7}\u{1B};]*;(?<url>[^\u{7}\u{1B}]*)(?:\u{7}|\u{1B}\\)(?<text>.*?)\u{1B}\]8;;(?:\u{7}|\u{1B}\\)/su;
+  /\u{1B}\]8;[^\u{7}\u{1B};]*;(?<url>[^\u{7}\u{1B}]*)(?:\u{7}|\u{1B}\\)(?<text>.*?)\u{1B}\]8;;(?:\u{7}|\u{1B}\\)/gsu;
 
 function replaceAnsiCodes(str: string): string {
   const replacedPatterns = str.replaceAll(
@@ -37,13 +37,9 @@ function replaceAnsiCodes(str: string): string {
     }
   );
 
-  const linkMatch = replacedPatterns.match(linkRegex);
-  if (linkMatch?.groups) {
-    const {url, text} = linkMatch.groups;
+  return replacedPatterns.replaceAll(linkRegex, (_, url, text) => {
     return `<link url="${url}"` + (url === text ? ' />' : `>${text}</link>`);
-  }
-
-  return replacedPatterns;
+  });
 }
 
 const ansiSerializer: SnapshotSerializer = {

@@ -78,10 +78,10 @@ const serializeCases: Array<[name: string, input: string]> = [
   ['bg:white', `foo${CSI}47m`],
   ['/bg', `foo${CSI}49m`],
   ['multiple cursor movements', `foo${cursor.up(3)}bar${cursor.backward(10)}`],
-  ['link', ansiEscapes.link('https://example.com', 'example')],
+  ['link', 'foo' + ansiEscapes.link('https://example.com', 'example')],
   [
     'repeated link',
-    ansiEscapes.link('https://example.com', 'https://example.com')
+    'foo' + ansiEscapes.link('https://example.com', 'https://example.com')
   ]
 ];
 suite('serializer', () => {

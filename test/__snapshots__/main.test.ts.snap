@@ -100,7 +100,7 @@ exports[`serializer > serialize > green 1`] = `"foo<green>"`;
 
 exports[`serializer > serialize > italic 1`] = `"foo<italic>"`;
 
-exports[`serializer > serialize > link 1`] = `"<link url="example">https://example.com</link>"`;
+exports[`serializer > serialize > link 1`] = `"foo<link url="example">https://example.com</link>"`;
 
 exports[`serializer > serialize > magenta 1`] = `"foo<magenta>"`;
 
@@ -108,7 +108,7 @@ exports[`serializer > serialize > multiple cursor movements 1`] = `"foo<cursor.u
 
 exports[`serializer > serialize > red 1`] = `"foo<red>"`;
 
-exports[`serializer > serialize > repeated link 1`] = `"<link url="https://example.com" />"`;
+exports[`serializer > serialize > repeated link 1`] = `"foo<link url="https://example.com" />"`;
 
 exports[`serializer > serialize > returns non-ansi string unchanged 1`] = `"choo choo"`;
 
