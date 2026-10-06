@@ -4,33 +4,46 @@ import * as codes from './codes.ts';
 const pattern = /\x1B([78]|\[(?:\?25[lh]|\d+;\d+H|\d*[A-Z]+|\d+m))/g;
 const repeatedPattern = /^(?<count>\d*)(?<code>[a-zA-Z])$/;
 const lineColumnPattern = /^(?<line>\d+);(?<column>\d+)H$/;
+const linkRegex = // eslint-disable-next-line max-len
+  /\u{1B}\]8;[^\u{7}\u{1B};]*;(?<url>[^\u{7}\u{1B}]*)(?:\u{7}|\u{1B}\\)(?<text>.*?)\u{1B}\]8;;(?:\u{7}|\u{1B}\\)/su;
 
 function replaceAnsiCodes(str: string): string {
-  return str.replaceAll(pattern, (str, codeOrPrefixed: string) => {
-    const code = codeOrPrefixed.replace(/^\[/, '');
-    if (code in codes.color) {
-      return `<${codes.color[code as never]}>`;
-    }
-    if (code in codes.cursor) {
-      return `<cursor.${codes.cursor[code as never]}>`;
-    }
-    if (code in codes.erase) {
-      return `<erase.${codes.erase[code as never]}>`;
-    }
-    const repeatMatch = code.match(repeatedPattern);
-    if (repeatMatch?.groups) {
-      const {count, code: key} = repeatMatch.groups;
-      if (key in codes.repeatableCursor) {
-        return `<cursor.${codes.repeatableCursor[key as never]} count=${count || 1}>`;
+  const replacedPatterns = str.replaceAll(
+    pattern,
+    (str, codeOrPrefixed: string) => {
+      const code = codeOrPrefixed.replace(/^\[/, '');
+      if (code in codes.color) {
+        return `<${codes.color[code as never]}>`;
       }
+      if (code in codes.cursor) {
+        return `<cursor.${codes.cursor[code as never]}>`;
+      }
+      if (code in codes.erase) {
+        return `<erase.${codes.erase[code as never]}>`;
+      }
+      const repeatMatch = code.match(repeatedPattern);
+      if (repeatMatch?.groups) {
+        const {count, code: key} = repeatMatch.groups;
+        if (key in codes.repeatableCursor) {
+          return `<cursor.${codes.repeatableCursor[key as never]} count=${count || 1}>`;
+        }
+      }
+      const lineColumnMatch = code.match(lineColumnPattern);
+      if (lineColumnMatch?.groups) {
+        const {line: lineNumber, column: lineColumn} = lineColumnMatch.groups;
+        return `<cursor.moveTo line=${lineNumber} column=${lineColumn}>`;
+      }
+      return str;
     }
-    const lineColumnMatch = code.match(lineColumnPattern);
-    if (lineColumnMatch?.groups) {
-      const {line: lineNumber, column: lineColumn} = lineColumnMatch.groups;
-      return `<cursor.moveTo line=${lineNumber} column=${lineColumn}>`;
-    }
-    return str;
-  });
+  );
+
+  const linkMatch = replacedPatterns.match(linkRegex);
+  if (linkMatch?.groups) {
+    const {url, text} = linkMatch.groups;
+    return `<link url="${url}"` + (url === text ? ' />' : `>${text}</link>`);
+  }
+
+  return replacedPatterns;
 }
 
 const ansiSerializer: SnapshotSerializer = {

@@ -1,6 +1,7 @@
 import {test, expect, suite, SnapshotSerializer} from 'vitest';
 import ansiSerializer from '../src/main.ts';
 import {cursor, erase, scroll} from 'sisteransi';
+import ansiEscapes from 'ansi-escapes';
 
 type NewSnapshotSerializer = Exclude<SnapshotSerializer, {print: unknown}>;
 
@@ -76,7 +77,12 @@ const serializeCases: Array<[name: string, input: string]> = [
   ['bg:cyan', `foo${CSI}46m`],
   ['bg:white', `foo${CSI}47m`],
   ['/bg', `foo${CSI}49m`],
-  ['multiple cursor movements', `foo${cursor.up(3)}bar${cursor.backward(10)}`]
+  ['multiple cursor movements', `foo${cursor.up(3)}bar${cursor.backward(10)}`],
+  ['link', ansiEscapes.link('https://example.com', 'example')],
+  [
+    'repeated link',
+    ansiEscapes.link('https://example.com', 'https://example.com')
+  ]
 ];
 suite('serializer', () => {
   suite('serialize', () => {
